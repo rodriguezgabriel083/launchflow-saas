@@ -1,0 +1,60 @@
+export type Language = "en" | "es";
+
+export const messages = {
+  en: {
+    navigation: { dashboard: "Dashboard", projects: "Projects", tasks: "Tasks", team: "Team", settings: "Settings" },
+    common: { admin: "Admin", employee: "Employee", active: "Active", inviteMember: "Invite Member", editPermissions: "Edit Permissions", removeMember: "Remove Member", newProject: "New Project", search: "Search tasks, projects, people...", notifications: "Notifications", closeMenu: "Close menu", openMenu: "Open menu", logOut: "Log out", language: "Language", english: "English", spanish: "Spanish", saveChanges: "Save changes", noItems: "There are no items to show yet." },
+    auth: { landingTitle: "Bring every launch into focus.", landingText: "Plan projects, align your team, and move work forward from one focused workspace.", getStarted: "Get started", signIn: "Sign in", createAccount: "Create your account", createAccountText: "Start organizing your next launch in minutes.", signInTitle: "Welcome back", signInText: "Sign in to continue to your workspace.", name: "Name", email: "Email", password: "Password", register: "Create account", login: "Sign in", hasAccount: "Already have an account?", noAccount: "New to LaunchFlow?", signUp: "Sign up", back: "Back", loading: "Please wait...", registrationSuccess: "Check your inbox to confirm your email, then sign in.", missingConfig: "Supabase is not configured yet. Add the environment variables to continue.", genericError: "Something went wrong. Please try again.", invalidCredentials: "Invalid email or password." },
+    workspace: { name: "LaunchFlow Studio", plan: "Starter workspace" },
+    dashboard: {
+      welcome: "Welcome back, {name}", live: "Live", subtitle: "Here’s what’s happening across your projects and team today.",
+      activeProjects: "Active Projects", pendingTasks: "Pending Tasks", completedTasks: "Completed Tasks", overallProgress: "Overall Progress", thisMonth: "↗ 2 this month", thisWeek: "↘ 5 this week", velocity: "↗ 18% velocity", target: "Target: 80%",
+      projectProgress: "Project Progress", projectSubtitle: "Active initiatives moving toward launch", viewAll: "View all →", inProgress: "In Progress", mediumPriority: "Medium Priority", highPriority: "High Priority", progress: "Progress", due: "Due",
+      taskStatus: "Task Status", workload: "Current workload balance", inspect: "Inspect →", totalTasks: "Total Tasks", sprint: "Sprint velocity is on track",
+      assignedTasks: "Assigned Tasks", total: "0", all: "All", pending: "Pending", task: "Task", assignee: "Assignee", status: "Status", priority: "Priority", dueDate: "Due date", showing: "No tasks yet", next: "Next",
+      deadlines: "Upcoming Deadlines", deadlineSubtitle: "Important milestones for the next sprint", viewCalendar: "View Calendar"
+    },
+    projects: { title: "Projects", subtitle: "Plan, prioritize, and keep every launch moving.", empty: "No projects have been created yet.", name: "Project name", description: "Description", priority: "Priority", dueDate: "Due date", status: "Status", progress: "Progress", created: "Created", create: "Create project", edit: "Edit project", delete: "Delete project", view: "View", save: "Save changes", cancel: "Cancel", planning: "Planning", inProgress: "In progress", completed: "Completed", required: "Project name is required.", createdSuccess: "Project created successfully.", updatedSuccess: "Project updated successfully.", deletedSuccess: "Project deleted successfully.", deleteConfirm: "Delete this project? This action cannot be undone.", loadError: "Could not load projects.", saveError: "Could not save the project.", deleteError: "Could not delete the project.", noPermission: "You do not have permission to create projects." },
+    tasks: { title: "Tasks", subtitle: "Keep the team aligned on the work that moves launches forward.", empty: "No tasks yet." },
+    team: { title: "Team", subtitle: "People collaborating across your launches.", members: "Team members", name: "Name", email: "Email", role: "Role", assignedProjects: "Assigned projects", activeTasks: "Active tasks", status: "Status", actions: "Actions", permissions: "Manage permissions and membership from one place." },
+    settings: { title: "Settings", subtitle: "Manage your workspace and personal preferences.", workspace: "Workspace", workspaceName: "Workspace Name", workspaceLogo: "Workspace logo", logoHelper: "Your workspace logo will appear here.", profile: "Profile", name: "Name", email: "Email", preferences: "Preferences", account: "Account", logout: "Logout", deleteAccount: "Delete account", deleteHelper: "Account deletion will be available soon." },
+    status: { pending: "Pending", inProgress: "In Progress", completed: "Completed", active: "Active" },
+    priority: { low: "Low", medium: "Medium", high: "High" },
+    data: {
+      projects: [
+        ["Public Beta Launch", "Product, website, and onboarding release"], ["Mobile App v1.0", "Core iOS and Android experience"], ["Growth Experiment Hub", "Campaign planning and KPI tracking"]
+      ],
+      tasks: [
+        ["Validate onboarding flow", "Run five founder interviews and consolidate activation feedback."], ["Build launch analytics", "Connect product events to the weekly launch performance view."], ["Polish pricing page", "Refine plan comparison, FAQ copy, and responsive layouts."], ["Prepare beta announcement", "Draft customer email and coordinate social launch assets."], ["Update help center", "Document projects, task ownership, and progress workflows."]
+      ],
+      deadlines: [["Beta release checklist", "Public Beta Launch", "In 2 days"], ["Pricing page sign-off", "Website Refresh", "In 5 days"], ["Mobile build submission", "Mobile App v1.0", "Sep 22"]]
+    }
+  },
+  es: {
+    navigation: { dashboard: "Panel", projects: "Proyectos", tasks: "Tareas", team: "Equipo", settings: "Ajustes" },
+    common: { admin: "Administrador", employee: "Empleado", active: "Activo", inviteMember: "Invitar miembro", editPermissions: "Editar permisos", removeMember: "Eliminar miembro", newProject: "Nuevo proyecto", search: "Buscar tareas, proyectos o personas...", notifications: "Notificaciones", closeMenu: "Cerrar menú", openMenu: "Abrir menú", logOut: "Cerrar sesión", language: "Idioma", english: "Inglés", spanish: "Español", saveChanges: "Guardar cambios", noItems: "Aún no hay elementos para mostrar." },
+    auth: { landingTitle: "Lleva cada lanzamiento al foco.", landingText: "Planifica proyectos, alinea a tu equipo y mueve el trabajo desde un solo espacio.", getStarted: "Comenzar", signIn: "Iniciar sesión", createAccount: "Crea tu cuenta", createAccountText: "Organiza tu próximo lanzamiento en minutos.", signInTitle: "Bienvenido de nuevo", signInText: "Inicia sesión para continuar a tu espacio.", name: "Nombre", email: "Email", password: "Contraseña", register: "Crear cuenta", login: "Iniciar sesión", hasAccount: "¿Ya tienes una cuenta?", noAccount: "¿Eres nuevo en LaunchFlow?", signUp: "Regístrate", back: "Volver", loading: "Espera un momento...", registrationSuccess: "Revisa tu email para confirmar la cuenta y luego inicia sesión.", missingConfig: "Supabase aún no está configurado. Añade las variables de entorno para continuar.", genericError: "Algo salió mal. Inténtalo de nuevo.", invalidCredentials: "Email o contraseña inválidos." },
+    workspace: { name: "LaunchFlow Studio", plan: "Espacio inicial" },
+    dashboard: {
+      welcome: "Bienvenido de nuevo, {name}", live: "En vivo", subtitle: "Esto es lo que sucede hoy en tus proyectos y equipo.",
+      activeProjects: "Proyectos activos", pendingTasks: "Tareas pendientes", completedTasks: "Tareas completadas", overallProgress: "Progreso general", thisMonth: "↗ 2 este mes", thisWeek: "↘ 5 esta semana", velocity: "↗ 18% de velocidad", target: "Objetivo: 80%",
+      projectProgress: "Progreso de proyectos", projectSubtitle: "Iniciativas activas rumbo al lanzamiento", viewAll: "Ver todo →", inProgress: "En progreso", mediumPriority: "Prioridad media", highPriority: "Prioridad alta", progress: "Progreso", due: "Vence",
+      taskStatus: "Estado de tareas", workload: "Balance de carga actual", inspect: "Ver →", totalTasks: "Total de tareas", sprint: "La velocidad del sprint va según lo previsto",
+      assignedTasks: "Tareas asignadas", total: "0", all: "Todas", pending: "Pendientes", task: "Tarea", assignee: "Responsable", status: "Estado", priority: "Prioridad", dueDate: "Fecha límite", showing: "Aún no hay tareas", next: "Siguiente",
+      deadlines: "Próximas fechas límite", deadlineSubtitle: "Hitos importantes para el próximo sprint", viewCalendar: "Ver calendario"
+    },
+    projects: { title: "Proyectos", subtitle: "Planifica, prioriza y mantén cada lanzamiento en movimiento.", empty: "Aún no se han creado proyectos.", name: "Nombre del proyecto", description: "Descripción", priority: "Prioridad", dueDate: "Fecha límite", status: "Estado", progress: "Progreso", created: "Creado", create: "Crear proyecto", edit: "Editar proyecto", delete: "Eliminar proyecto", view: "Ver", save: "Guardar cambios", cancel: "Cancelar", planning: "Planificación", inProgress: "En progreso", completed: "Completado", required: "El nombre del proyecto es obligatorio.", createdSuccess: "Proyecto creado correctamente.", updatedSuccess: "Proyecto actualizado correctamente.", deletedSuccess: "Proyecto eliminado correctamente.", deleteConfirm: "¿Eliminar este proyecto? Esta acción no se puede deshacer.", loadError: "No se pudieron cargar los proyectos.", saveError: "No se pudo guardar el proyecto.", deleteError: "No se pudo eliminar el proyecto.", noPermission: "No tienes permiso para crear proyectos." },
+    tasks: { title: "Tareas", subtitle: "Mantén al equipo alineado con el trabajo que impulsa los lanzamientos.", empty: "Aún no hay tareas." },
+    team: { title: "Equipo", subtitle: "Personas que colaboran en tus lanzamientos.", members: "Miembros del equipo", name: "Nombre", email: "Email", role: "Rol", assignedProjects: "Proyectos asignados", activeTasks: "Tareas activas", status: "Estado", actions: "Acciones", permissions: "Gestiona permisos y miembros desde un solo lugar." },
+    settings: { title: "Ajustes", subtitle: "Gestiona tu espacio de trabajo y preferencias personales.", workspace: "Espacio de trabajo", workspaceName: "Nombre del espacio", workspaceLogo: "Logo del espacio", logoHelper: "El logo de tu espacio aparecerá aquí.", profile: "Perfil", name: "Nombre", email: "Email", preferences: "Preferencias", account: "Cuenta", logout: "Cerrar sesión", deleteAccount: "Eliminar cuenta", deleteHelper: "La eliminación de cuenta estará disponible próximamente." },
+    status: { pending: "Pendiente", inProgress: "En progreso", completed: "Completada", active: "Activo" },
+    priority: { low: "Baja", medium: "Media", high: "Alta" },
+    data: {
+      projects: [["Lanzamiento beta público", "Producto, sitio web y lanzamiento de onboarding"], ["App móvil v1.0", "Experiencia principal de iOS y Android"], ["Hub de experimentos de crecimiento", "Planificación de campañas y seguimiento de KPIs"]],
+      tasks: [["Validar flujo de onboarding", "Realiza cinco entrevistas con fundadores y consolida comentarios."], ["Crear analítica de lanzamiento", "Conecta eventos de producto con la vista semanal de rendimiento."], ["Pulir página de precios", "Mejora la comparación de planes, FAQs y layouts responsive."], ["Preparar anuncio beta", "Redacta el email a clientes y coordina los recursos sociales."], ["Actualizar centro de ayuda", "Documenta proyectos, responsables y flujos de progreso."]],
+      deadlines: [["Lista de verificación beta", "Lanzamiento beta público", "En 2 días"], ["Aprobación de página de precios", "Actualización del sitio", "En 5 días"], ["Envío de compilación móvil", "App móvil v1.0", "22 sep."]]
+    }
+  }
+} as const;
+
+export type Translations = (typeof messages)[Language];
