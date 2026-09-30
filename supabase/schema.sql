@@ -31,6 +31,17 @@ create table if not exists public.workspace_members (
 create index if not exists workspace_members_user_id_idx on public.workspace_members(user_id);
 create index if not exists workspace_members_workspace_id_idx on public.workspace_members(workspace_id);
 
+create table if not exists public.workspace_invitations (
+  id uuid primary key default gen_random_uuid(), workspace_id uuid not null references public.workspaces(id) on delete cascade,
+  email text not null check (char_length(trim(email)) > 3), role text not null default 'employee' check (role in ('admin', 'employee')),
+  can_create_projects boolean not null default false, can_edit_projects boolean not null default false,
+  can_create_tasks boolean not null default false, can_assign_tasks boolean not null default false,
+  can_manage_users boolean not null default false, status text not null default 'pending' check (status in ('pending', 'accepted', 'cancelled')),
+  invited_by uuid not null references auth.users(id) on delete cascade, created_at timestamptz not null default now()
+);
+create index if not exists workspace_invitations_workspace_id_idx on public.workspace_invitations(workspace_id);
+create unique index if not exists workspace_invitations_pending_email_idx on public.workspace_invitations(workspace_id, lower(email)) where status = 'pending';
+
 create table if not exists public.projects (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references public.workspaces(id) on delete cascade,
@@ -139,6 +150,7 @@ $$;
 alter table public.profiles enable row level security;
 alter table public.workspaces enable row level security;
 alter table public.workspace_members enable row level security;
+alter table public.workspace_invitations enable row level security;
 alter table public.projects enable row level security;
 alter table public.tasks enable row level security;
 
@@ -157,6 +169,67 @@ create policy "Admins can update their workspaces" on public.workspaces
 drop policy if exists "Members can view people in their workspace" on public.workspace_members;
 create policy "Members can view people in their workspace" on public.workspace_members
   for select to authenticated using (public.is_workspace_member(workspace_id));
+
+create or replace function public.enforce_workspace_member_changes() returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if tg_op = 'UPDATE' then
+    if new.workspace_id is distinct from old.workspace_id or new.user_id is distinct from old.user_id then raise exception 'Membership workspace and user cannot be changed'; end if;
+    if new.role = 'admin' then new.can_create_projects := true; new.can_edit_projects := true; new.can_create_tasks := true; new.can_assign_tasks := true; new.can_manage_users := true; end if;
+    if old.role = 'admin' and new.role <> 'admin' and not exists (select 1 from public.workspace_members where workspace_id = old.workspace_id and role = 'admin' and id <> old.id) then raise exception 'A workspace must keep at least one administrator'; end if;
+    return new;
+  end if;
+  if not exists (select 1 from public.workspaces where id = old.workspace_id) then return old; end if;
+  if old.role = 'admin' and not exists (select 1 from public.workspace_members where workspace_id = old.workspace_id and role = 'admin' and id <> old.id) then raise exception 'A workspace must keep at least one administrator'; end if;
+  return old;
+end;
+$$;
+create trigger enforce_workspace_member_changes before update or delete on public.workspace_members for each row execute procedure public.enforce_workspace_member_changes();
+create policy "Admins can update workspace members" on public.workspace_members for update to authenticated using (public.is_workspace_admin(workspace_id)) with check (public.is_workspace_admin(workspace_id));
+create policy "Admins can remove workspace members" on public.workspace_members for delete to authenticated using (public.is_workspace_admin(workspace_id));
+create policy "Admins can view workspace invitations" on public.workspace_invitations for select to authenticated using (public.is_workspace_admin(workspace_id));
+create policy "Admins can create workspace invitations" on public.workspace_invitations for insert to authenticated with check (public.is_workspace_admin(workspace_id) and invited_by = auth.uid() and status = 'pending');
+create policy "Admins can cancel workspace invitations" on public.workspace_invitations for delete to authenticated using (public.is_workspace_admin(workspace_id));
+revoke all on function public.enforce_workspace_member_changes() from public;
+
+create or replace function public.get_my_pending_workspace_invitations()
+returns table (invitation_id uuid, workspace_id uuid, workspace_name text, role text, can_create_projects boolean, can_edit_projects boolean, can_create_tasks boolean, can_assign_tasks boolean, can_manage_users boolean)
+language sql stable security definer set search_path = '' as $$
+  select invitation.id, invitation.workspace_id, workspace.name, invitation.role,
+    invitation.can_create_projects, invitation.can_edit_projects, invitation.can_create_tasks,
+    invitation.can_assign_tasks, invitation.can_manage_users
+  from public.workspace_invitations as invitation
+  join public.workspaces as workspace on workspace.id = invitation.workspace_id
+  join auth.users as app_user on app_user.id = auth.uid()
+  where invitation.status = 'pending' and app_user.email_confirmed_at is not null
+    and lower(trim(invitation.email)) = lower(trim(app_user.email))
+  order by invitation.created_at asc;
+$$;
+
+create or replace function public.respond_to_workspace_invitation(target_invitation_id uuid, accept_invitation boolean)
+returns uuid language plpgsql security definer set search_path = '' as $$
+declare authenticated_email text; invitation public.workspace_invitations%rowtype;
+begin
+  if auth.uid() is null then raise exception 'Authentication required' using errcode = '42501'; end if;
+  select app_user.email into authenticated_email from auth.users as app_user where app_user.id = auth.uid() and app_user.email_confirmed_at is not null;
+  if authenticated_email is null then raise exception 'A verified email is required' using errcode = '42501'; end if;
+  select pending_invitation.* into invitation from public.workspace_invitations as pending_invitation where pending_invitation.id = target_invitation_id and pending_invitation.status = 'pending' for update;
+  if not found then raise exception 'Pending invitation not found' using errcode = 'P0002'; end if;
+  if lower(trim(invitation.email)) <> lower(trim(authenticated_email)) then raise exception 'This invitation belongs to another user' using errcode = '42501'; end if;
+  if accept_invitation then
+    insert into public.workspace_members (workspace_id, user_id, role, can_create_projects, can_edit_projects, can_create_tasks, can_assign_tasks, can_manage_users)
+    values (invitation.workspace_id, auth.uid(), invitation.role, invitation.can_create_projects, invitation.can_edit_projects, invitation.can_create_tasks, invitation.can_assign_tasks, invitation.can_manage_users)
+    on conflict (workspace_id, user_id) do nothing;
+    update public.workspace_invitations set status = 'accepted' where id = invitation.id;
+  else
+    update public.workspace_invitations set status = 'cancelled' where id = invitation.id;
+  end if;
+  return invitation.workspace_id;
+end;
+$$;
+revoke all on function public.get_my_pending_workspace_invitations() from public;
+revoke all on function public.respond_to_workspace_invitation(uuid, boolean) from public;
+grant execute on function public.get_my_pending_workspace_invitations() to authenticated;
+grant execute on function public.respond_to_workspace_invitation(uuid, boolean) to authenticated;
 
 create policy "Members can view projects in their workspace" on public.projects
   for select to authenticated using (exists (select 1 from public.workspace_members m where m.workspace_id = projects.workspace_id and m.user_id = auth.uid()));
