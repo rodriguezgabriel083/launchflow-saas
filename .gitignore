@@ -5,3 +5,5 @@ out
 .env*
 !.env.example
 Supabase LaunchFlow password.txt
+supabase/functions/.env.production
+supabase/.temp/
