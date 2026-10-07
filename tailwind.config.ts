@@ -5,15 +5,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        canvas: "#0b0f17",
-        panel: "#111827",
-        elevated: "#182132",
-        line: "rgba(255,255,255,.075)",
-        violet: "#9b75ff",
-        blue: "#60a5fa",
-        mint: "#4edea3"
+        canvas: "rgb(var(--canvas) / <alpha-value>)",
+        panel: "rgb(var(--panel) / <alpha-value>)",
+        elevated: "rgb(var(--elevated) / <alpha-value>)",
+        line: "rgb(var(--line) / .075)",
+        violet: "rgb(var(--violet) / <alpha-value>)",
+        primary: "rgb(var(--primary) / <alpha-value>)",
+        cyan: "rgb(var(--cyan) / <alpha-value>)",
+        coral: "rgb(var(--coral) / <alpha-value>)",
+        amber: { DEFAULT: "rgb(var(--amber) / <alpha-value>)" },
+        rose: { 300: "rgb(var(--coral) / <alpha-value>)", 400: "rgb(var(--coral) / <alpha-value>)" },
+        blue: "rgb(var(--blue) / <alpha-value>)",
+        mint: "rgb(var(--mint) / <alpha-value>)"
       },
-      boxShadow: { panel: "0 1px 3px rgba(0,0,0,.4)" }
+      opacity: { 45: ".45" },
+      boxShadow: { panel: "0 12px 36px -24px rgba(0,0,0,.7)" }
     }
   },
   plugins: []
