@@ -14,21 +14,60 @@ const activeWorkspaceKey = (userId: string) => `launchflow-active-workspace:${us
 
 export function AuthGate() {
   const [language, setLanguage] = useState<Language>("en"); const [screen, setScreen] = useState<Screen>("landing"); const [session, setSession] = useState<Session | null>(null); const [profile, setProfile] = useState<Profile | null>(null); const [invitations, setInvitations] = useState<PendingWorkspaceInvitation[]>([]); const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(null); const [responding, setResponding] = useState(false); const [invitationNotice, setInvitationNotice] = useState(""); const [loadingSession, setLoadingSession] = useState(true); const t = messages[language];
+  const [hydratedUserId, setHydratedUserId] = useState<string | null>(null);
   const updateLanguage = (nextLanguage: Language) => { storeLanguage(nextLanguage); setLanguage(nextLanguage); };
   useEffect(() => { setLanguage(getStoredLanguage()); }, []);
   useEffect(() => { document.documentElement.lang = language; }, [language]);
   useEffect(() => {
     if (!isSupabaseConfigured()) { setLoadingSession(false); return; }
     const supabase = getSupabaseClient();
-    const updateSession = async (nextSession: Session | null) => { setSession(nextSession); if (!nextSession) { setProfile(null); setInvitations([]); setActiveWorkspaceId(null); setLoadingSession(false); return; } setLoadingSession(true); const [profileResult, invitationResult] = await Promise.all([supabase.from("profiles").select("name, email").eq("id", nextSession.user.id).maybeSingle(), supabase.rpc("get_my_pending_workspace_invitations")]); setProfile(profileResult.data); setInvitations((invitationResult.data ?? []) as PendingWorkspaceInvitation[]); setActiveWorkspaceId(window.localStorage.getItem(activeWorkspaceKey(nextSession.user.id))); setLoadingSession(false); };
-    supabase.auth.getSession().then(({ data }) => void updateSession(data.session));
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => { void updateSession(nextSession); });
-    return () => listener.subscription.unsubscribe();
+    let active = true;
+    let receivedAuthEvent = false;
+    // Focus recovery and token refresh must not unmount the workspace.
+    // Keep Supabase queries outside the auth callback.
+    const updateSession = (nextSession: Session | null) => {
+      if (!active) return;
+      setSession(nextSession);
+      if (!nextSession) { setProfile(null); setInvitations([]); setActiveWorkspaceId(null); setHydratedUserId(null); setLoadingSession(false); }
+    };
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      receivedAuthEvent = true;
+      updateSession(nextSession);
+    });
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!receivedAuthEvent) updateSession(data.session);
+    }).catch(() => { if (!receivedAuthEvent) updateSession(null); });
+    return () => { active = false; listener.subscription.unsubscribe(); };
   }, []);
+  const sessionUserId = session?.user.id;
+  useEffect(() => {
+    if (!sessionUserId) return;
+    let active = true;
+    setLoadingSession(true);
+    setActiveWorkspaceId(window.localStorage.getItem(activeWorkspaceKey(sessionUserId)));
+    const supabase = getSupabaseClient();
+    // Hydrate on user changes only. Discard requests from a previous session.
+    void Promise.all([
+      supabase.from("profiles").select("name, email").eq("id", sessionUserId).maybeSingle(),
+      supabase.rpc("get_my_pending_workspace_invitations"),
+    ]).then(([profileResult, invitationResult]) => {
+      if (!active) return;
+      setProfile(profileResult.data);
+      setInvitations((invitationResult.data ?? []) as PendingWorkspaceInvitation[]);
+    }).catch(() => {
+      if (!active) return;
+      setProfile(null); setInvitations([]);
+    }).finally(() => {
+      if (!active) return;
+      setHydratedUserId(sessionUserId);
+      setLoadingSession(false);
+    });
+    return () => { active = false; };
+  }, [sessionUserId]);
   async function respondToInvitation(accept: boolean) { if (!session || invitations.length === 0) return; setResponding(true); setInvitationNotice(""); const invitation = invitations[0]; const { data, error } = await getSupabaseClient().rpc("respond_to_workspace_invitation", { target_invitation_id: invitation.invitation_id, accept_invitation: accept }); setResponding(false); if (error) { setInvitationNotice(t.invitations.responseError); return; } if (accept && data) { const workspaceId = String(data); window.localStorage.setItem(activeWorkspaceKey(session.user.id), workspaceId); setActiveWorkspaceId(workspaceId); } setInvitations(current => current.slice(1)); }
-  if (loadingSession) return <div className="grid min-h-screen place-items-center bg-canvas text-sm text-slate-400">LaunchFlow</div>;
+  if (loadingSession || (session && hydratedUserId !== session.user.id)) return <div className="grid min-h-screen place-items-center bg-canvas text-sm text-slate-400">LaunchFlow</div>;
   if (session && invitations.length > 0) return <InvitationPrompt invitation={invitations[0]} language={language} setLanguage={updateLanguage} responding={responding} notice={invitationNotice} onAccept={() => respondToInvitation(true)} onDecline={() => respondToInvitation(false)} />;
-  if (session) { const userName = profile?.name?.trim() || session.user.user_metadata.name?.trim() || profile?.email || session.user.email || "User"; const userEmail = profile?.email || session.user.email || ""; return <DashboardShell userId={session.user.id} userName={userName} userEmail={userEmail} activeWorkspaceId={activeWorkspaceId} language={language} setLanguage={updateLanguage} onLogout={() => getSupabaseClient().auth.signOut()} />; }
+  if (session) { const userName = profile?.name?.trim() || session.user.user_metadata.name?.trim() || profile?.email || session.user.email || "User"; const userEmail = profile?.email || session.user.email || ""; return <DashboardShell key={session.user.id} userId={session.user.id} userName={userName} userEmail={userEmail} activeWorkspaceId={activeWorkspaceId} language={language} setLanguage={updateLanguage} onLogout={() => getSupabaseClient().auth.signOut()} />; }
   return <AuthScreen screen={screen} setScreen={setScreen} language={language} setLanguage={updateLanguage} />;
 }
 
