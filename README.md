@@ -4,6 +4,8 @@
 
 [Live Demo](https://launchflow-saas-five.vercel.app) · [Repository](https://github.com/rodriguezgabriel083/launchflow-saas)
 
+![LaunchFlow Dashboard](docs/screenshots/dashboard-overview.png)
+
 ---
 
 ## Overview
@@ -11,6 +13,50 @@
 LaunchFlow was built as a production-style SaaS MVP focused on the core workflows teams need to organize projects, assign work and collaborate securely inside shared workspaces.
 
 The application is backed by real Supabase data and authentication. It includes granular employee permissions, Row Level Security, invitation workflows, transactional email delivery and persistent URL-based navigation.
+
+## Product Tour
+
+### Dashboard
+
+The dashboard brings project health, task workload, progress and deadlines into one place.
+
+![LaunchFlow Dashboard Overview](docs/screenshots/dashboard-overview.png)
+
+![LaunchFlow Dashboard Workflow](docs/screenshots/dashboard-workflow.png)
+
+### Project Management
+
+Projects support status, priority, progress tracking, deadlines and full CRUD workflows.
+
+![LaunchFlow Projects](docs/screenshots/projects.png)
+
+### Task Management
+
+Tasks can be created, assigned, prioritized, updated and completed while staying linked to their parent projects.
+
+![LaunchFlow Tasks](docs/screenshots/tasks.png)
+
+### Team Management
+
+Workspace administrators can manage members, roles and access from a dedicated team view.
+
+![LaunchFlow Team](docs/screenshots/team.png)
+
+### Granular Permissions
+
+Employee permissions can be configured independently for project creation/editing, task creation/assignment and user management.
+
+![LaunchFlow Team Permissions](docs/screenshots/team-permissions.png)
+
+### Invitation Flow
+
+Invited users can review their workspace invitation and accept or decline access.
+
+![LaunchFlow Invitation Acceptance](docs/screenshots/invitation-acceptance.png)
+
+Administrators can also review, resend or cancel pending invitations.
+
+![LaunchFlow Pending Invitation](docs/screenshots/pending-invitation.png)
 
 ## Features
 
